@@ -1,0 +1,26 @@
+{
+  "name": "bluegoose-backend",
+  "version": "1.0.0",
+  "description": "Vacation rental investment screener backend",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "cors": "^2.8.5",
+    "csv-parse": "^5.5.6",
+    "express": "^4.19.2",
+    "marked": "^12.0.0",
+    "node-cron": "^3.0.3",
+    "pg": "^8.12.0",
+    "pg-boss": "^9.0.3",
+    "resend": "^3.4.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
