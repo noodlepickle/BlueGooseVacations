@@ -65,7 +65,14 @@ async function fetchListings(area, maxResults = 40) {
       if (listing.purchasePrice > 0) results.push(listing);
     }
   } catch (err) {
-    console.error(`[realtor] Error fetching ${area.id}:`, err.message);
+    const status = err.response?.status;
+    if (status === 403) {
+      console.warn(`[realtor] 403 Forbidden on ${area.id} — your RapidAPI key may not be subscribed to realtor-com4. Check rapidapi.com/dashboard.`);
+    } else if (status === 429) {
+      console.warn(`[realtor] Rate limited on ${area.id}`);
+    } else {
+      console.error(`[realtor] Error fetching ${area.id}:`, err.response?.data?.message || err.message);
+    }
   }
 
   console.log(`[realtor] Fetched ${results.length} listings for ${area.id}`);

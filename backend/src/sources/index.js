@@ -123,7 +123,7 @@ function getSourceStatus() {
   return [
     { name: 'zillow', enabled: zillow.enabled, note: zillow.enabled ? 'active' : 'requires RAPIDAPI_KEY' },
     { name: 'realtor', enabled: realtor.enabled, note: realtor.enabled ? 'active' : 'requires RAPIDAPI_KEY' },
-    { name: 'redfin', enabled: redfin.enabled, note: 'always active (public API)' },
+    { name: 'redfin', enabled: redfin.enabled, note: redfin.enabled ? 'active' : 'disabled (set REDFIN_ENABLED=true to enable — API is unreliable)' },
     { name: 'insideairbnb', enabled: insideairbnb.enabled, note: 'always active (STR comps)' },
     { name: 'rabbu', enabled: rabbu.enabled, note: 'always active (STR market averages)' },
     { name: 'airdna', enabled: airdna.enabled, note: airdna.enabled ? 'active' : 'stubbed — set AIRDNA_API_KEY to enable' },

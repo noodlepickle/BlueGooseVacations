@@ -43,7 +43,7 @@ function buildDigest(allAreaResults, goals, runDate) {
     const qualifying = results.filter(r => r.qualifies);
     const nearMiss = results.filter(r => !r.qualifies && r.issues.length <= 1);
 
-    lines.push(`## ${area.data.label}`);
+    lines.push(`## ${area.label || area.id}`);
     lines.push('');
     lines.push(`${results.length} properties · ${qualifying.length} qualifying · ${nearMiss.length} near-miss`);
     lines.push('');

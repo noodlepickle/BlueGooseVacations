@@ -13,6 +13,7 @@ const GROUPS = [
     description: 'Short-term rental market data. AirDNA activates automatically when set.',
     keys: [
       { key: 'AIRDNA_API_KEY', label: 'AirDNA API Key', secret: true, placeholder: 'Optional — auto-enables AirDNA source', hint: 'Get from airdna.co developer portal' },
+      { key: 'REDFIN_ENABLED', label: 'Enable Redfin', secret: false, placeholder: 'true', hint: 'Redfin\'s unofficial API is unreliable. Set to "true" to attempt anyway.' },
     ],
   },
   {

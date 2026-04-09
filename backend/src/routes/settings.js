@@ -12,6 +12,7 @@ const SECRET_KEYS = new Set([
 // Keys allowed to be managed via this API
 const ALLOWED_KEYS = new Set([
   'RAPIDAPI_KEY',
+  'REDFIN_ENABLED',
   'RESEND_API_KEY',
   'DIGEST_FROM',
   'DIGEST_TO',

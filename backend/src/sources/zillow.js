@@ -5,30 +5,39 @@ const axios = require('axios');
 const HOST = 'zillow-com1.p.rapidapi.com';
 function isEnabled() { return !!process.env.RAPIDAPI_KEY; }
 
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
+// Map our internal property type names to Zillow's expected values
+const TYPE_MAP = {
+  SingleFamily: 'Houses',
+  Townhouse: 'Townhomes',
+  Condo: 'Condos',
+  MultiFamily: 'Multi-family',
+};
+
+function mapTypes(types) {
+  return (types || []).map(t => TYPE_MAP[t] || t).join(',');
 }
 
 function normalize(hit, areaId) {
+  const info = hit.hdpData?.homeInfo || {};
   return {
-    id: `zillow:${hit.zpid || hit.hdpData?.homeInfo?.zpid || hit.listingId}`,
+    id: `zillow:${hit.zpid || info.zpid || hit.listingId}`,
     source: 'zillow',
-    address: hit.address || hit.hdpData?.homeInfo?.streetAddress || '',
-    city: hit.hdpData?.homeInfo?.city || '',
-    state: hit.hdpData?.homeInfo?.state || '',
-    zipCode: hit.hdpData?.homeInfo?.zipcode || '',
-    purchasePrice: hit.price || hit.hdpData?.homeInfo?.price || 0,
-    beds: hit.bedrooms || hit.hdpData?.homeInfo?.bedrooms || 0,
-    baths: hit.bathrooms || hit.hdpData?.homeInfo?.bathrooms || 0,
-    sqft: hit.livingArea || hit.hdpData?.homeInfo?.livingArea || null,
-    yearBuilt: hit.yearBuilt || hit.hdpData?.homeInfo?.yearBuilt || null,
-    propertyType: hit.homeType || hit.hdpData?.homeInfo?.homeType || '',
-    hoaMonthly: hit.hdpData?.homeInfo?.hoaFee || null,
+    address: hit.address || info.streetAddress || '',
+    city: info.city || '',
+    state: info.state || '',
+    zipCode: info.zipcode || '',
+    purchasePrice: hit.price || info.price || 0,
+    beds: hit.bedrooms || info.bedrooms || 0,
+    baths: hit.bathrooms || info.bathrooms || 0,
+    sqft: hit.livingArea || info.livingArea || null,
+    yearBuilt: hit.yearBuilt || info.yearBuilt || null,
+    propertyType: hit.homeType || info.homeType || '',
+    hoaMonthly: info.hoaFee || null,
     daysOnMarket: hit.daysOnMarket || null,
-    priceReduced: !!(hit.priceReduction || hit.hdpData?.homeInfo?.priceReduction),
+    priceReduced: !!(hit.priceReduction || info.priceReduction),
     listingUrl: hit.detailUrl
       ? `https://www.zillow.com${hit.detailUrl}`
-      : `https://www.zillow.com/homes/${hit.zpid}_zpid/`,
+      : `https://www.zillow.com/homes/${hit.zpid || info.zpid}_zpid/`,
     fetchedAt: new Date().toISOString(),
     areaId,
     strNightlyRate: null,
@@ -44,35 +53,40 @@ async function fetchListings(area, maxResults = 40) {
   }
 
   const results = [];
-  for (const zip of area.zipCodes) {
-    try {
-      const resp = await axios.get(`https://${HOST}/propertyExtendedSearch`, {
-        headers: {
-          'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-          'X-RapidAPI-Host': HOST,
-        },
-        params: {
-          location: zip,
-          home_type: (area.propertyTypes || []).join(','),
-          minPrice: area.priceMin,
-          maxPrice: area.priceMax,
-          bedsMin: area.bedsMin,
-          bedsMax: area.bedsMax,
-        },
-      });
 
-      const props = resp.data?.props || [];
-      for (const p of props) {
-        const listing = normalize(p, area.id);
-        if (listing.purchasePrice > 0) results.push(listing);
-        if (results.length >= maxResults) break;
-      }
-    } catch (err) {
-      console.error(`[zillow] Error fetching zip ${zip}:`, err.message);
+  try {
+    const resp = await axios.get(`https://${HOST}/propertyExtendedSearch`, {
+      headers: {
+        'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
+        'X-RapidAPI-Host': HOST,
+      },
+      params: {
+        location: area.location || area.label,
+        home_type: mapTypes(area.propertyTypes),
+        minPrice: area.priceMin,
+        maxPrice: area.priceMax,
+        bedsMin: area.bedsMin,
+        bedsMax: area.bedsMax,
+        status_type: 'ForSale',
+        sort: 'Newest',
+      },
+      timeout: 15000,
+    });
+
+    const props = resp.data?.props || [];
+    for (const p of props) {
+      const listing = normalize(p, area.id);
+      if (listing.purchasePrice > 0) results.push(listing);
+      if (results.length >= maxResults) break;
     }
-
-    if (area.zipCodes.indexOf(zip) < area.zipCodes.length - 1) {
-      await sleep(300);
+  } catch (err) {
+    const status = err.response?.status;
+    if (status === 404) {
+      console.log(`[zillow] No results for ${area.id}`);
+    } else if (status === 429) {
+      console.warn(`[zillow] Rate limited on ${area.id} — try again later or upgrade your RapidAPI plan`);
+    } else {
+      console.error(`[zillow] Error fetching ${area.id}:`, err.response?.data?.message || err.message);
     }
   }
 
