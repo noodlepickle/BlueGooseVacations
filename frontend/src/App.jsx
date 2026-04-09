@@ -5,6 +5,7 @@ import ProformaBuilder from './pages/ProformaBuilder';
 import MarketConfig from './pages/MarketConfig';
 import GoalsEditor from './pages/GoalsEditor';
 import RunHistory from './pages/RunHistory';
+import Settings from './pages/Settings';
 
 function NavItem({ to, children }) {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           <NavItem to="/markets">Markets</NavItem>
           <NavItem to="/goals">Goals</NavItem>
           <NavItem to="/runs">Run History</NavItem>
+          <NavItem to="/settings">Settings</NavItem>
         </nav>
         <main className="p-6">
           <Routes>
@@ -41,6 +43,7 @@ export default function App() {
             <Route path="/markets" element={<MarketConfig />} />
             <Route path="/goals" element={<GoalsEditor />} />
             <Route path="/runs" element={<RunHistory />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>
       </div>

@@ -2,11 +2,7 @@
 
 const axios = require('axios');
 
-const ENABLED = !!process.env.AIRDNA_API_KEY;
-
-if (!ENABLED) {
-  console.log('[airdna] Not configured — set AIRDNA_API_KEY to enable');
-}
+function isEnabled() { return !!process.env.AIRDNA_API_KEY; }
 
 /**
  * Fetch AirDNA market summary for a zip code.
@@ -14,7 +10,10 @@ if (!ENABLED) {
  * Automatically active when AIRDNA_API_KEY is set.
  */
 async function fetchMarketData(zipCode) {
-  if (!ENABLED) return null;
+  if (!isEnabled()) {
+    console.log('[airdna] Not configured — set AIRDNA_API_KEY to enable');
+    return null;
+  }
 
   try {
     const resp = await axios.get('https://api.airdna.co/v1/market/summary', {
@@ -37,4 +36,4 @@ async function fetchMarketData(zipCode) {
   }
 }
 
-module.exports = { fetchMarketData, enabled: ENABLED };
+module.exports = { fetchMarketData, get enabled() { return isEnabled(); } };

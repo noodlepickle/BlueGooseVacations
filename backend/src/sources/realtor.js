@@ -2,8 +2,8 @@
 
 const axios = require('axios');
 
-const ENABLED = !!process.env.RAPIDAPI_KEY;
 const HOST = 'realtor-com4.p.rapidapi.com';
+function isEnabled() { return !!process.env.RAPIDAPI_KEY; }
 
 function normalize(hit, areaId) {
   const loc = hit.location?.address || {};
@@ -37,7 +37,7 @@ function normalize(hit, areaId) {
 }
 
 async function fetchListings(area, maxResults = 40) {
-  if (!ENABLED) {
+  if (!isEnabled()) {
     console.log('[realtor] Disabled — set RAPIDAPI_KEY to enable');
     return [];
   }
@@ -72,4 +72,4 @@ async function fetchListings(area, maxResults = 40) {
   return results;
 }
 
-module.exports = { fetchListings, enabled: ENABLED };
+module.exports = { fetchListings, get enabled() { return isEnabled(); } };

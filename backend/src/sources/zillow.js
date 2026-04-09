@@ -2,8 +2,8 @@
 
 const axios = require('axios');
 
-const ENABLED = !!process.env.RAPIDAPI_KEY;
 const HOST = 'zillow-com1.p.rapidapi.com';
+function isEnabled() { return !!process.env.RAPIDAPI_KEY; }
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
@@ -38,7 +38,7 @@ function normalize(hit, areaId) {
 }
 
 async function fetchListings(area, maxResults = 40) {
-  if (!ENABLED) {
+  if (!isEnabled()) {
     console.log('[zillow] Disabled — set RAPIDAPI_KEY to enable');
     return [];
   }
@@ -80,4 +80,4 @@ async function fetchListings(area, maxResults = 40) {
   return results;
 }
 
-module.exports = { fetchListings, enabled: ENABLED };
+module.exports = { fetchListings, get enabled() { return isEnabled(); } };
